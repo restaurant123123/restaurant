@@ -561,7 +561,6 @@
         // 默认加载生猛海鲜
         filterMenu('seafood');
 
-window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const tableNumber = urlParams.get('table'); // 获取网址中的 table 参数
     if (tableNumber) {
@@ -570,7 +569,6 @@ window.addEventListener('DOMContentLoaded', () => {
             tableElement.textContent = tableNumber + ' 桌'; // 自动替换成对应的桌号
         }
     }
-});
     </script>
 </body>
 </html>
