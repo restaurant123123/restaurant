@@ -35,7 +35,7 @@
             <p class="text-[11px] text-[#E6D5B8] tracking-widest mt-1 uppercase font-semibold">DIING SHENG XUAN · GRAND SEAFOOD & ZICHAR</p>
             <div class="flex items-center space-x-2 mt-2">
                 <div class="bg-black/50 border border-[#D4AF37]/60 px-3 py-0.5 rounded-full text-xs text-[#FFD700] shadow-inner backdrop-blur-md">
-                    📍 尊贵堂食桌位：<span class="font-bold text-white">A08 桌</span>
+                    📍 尊贵堂食桌位：<span class="font-bold text-white" id="table-display">A08 桌</span>
                 </div>
                 <!-- 新增：查看今日已点订单按钮 -->
                 <button onclick="toggleTodayOrdersModal()" class="bg-[#D4AF37] text-white border border-[#FFD700] px-3 py-0.5 rounded-full text-xs font-bold shadow transition active:scale-95 flex items-center space-x-1">
@@ -560,6 +560,17 @@
 
         // 默认加载生猛海鲜
         filterMenu('seafood');
+
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tableNumber = urlParams.get('table'); // 获取网址中的 table 参数
+    if (tableNumber) {
+        const tableElement = document.getElementById('table-display');
+        if (tableElement) {
+            tableElement.textContent = tableNumber + ' 桌'; // 自动替换成对应的桌号
+        }
+    }
+});
     </script>
 </body>
 </html>
