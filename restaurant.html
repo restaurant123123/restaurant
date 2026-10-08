@@ -37,7 +37,7 @@
                 <div class="bg-black/50 border border-[#D4AF37]/60 px-3 py-0.5 rounded-full text-xs text-[#FFD700] shadow-inner backdrop-blur-md">
                     📍 尊贵堂食桌位：<span class="font-bold text-white" id="table-display">A08 桌</span>
                 </div>
-                <!-- 新增：查看今日已点订单按钮 -->
+                <!-- 查看今日已点订单按钮 -->
                 <button onclick="toggleTodayOrdersModal()" class="bg-[#D4AF37] text-white border border-[#FFD700] px-3 py-0.5 rounded-full text-xs font-bold shadow transition active:scale-95 flex items-center space-x-1">
                     <span>📜 今日已点</span>
                 </button>
@@ -67,7 +67,7 @@
         </button>
     </div>
 
-    <!-- 主体菜单展示区 (整齐并列双列网格) -->
+    <!-- 主体菜单展示区 -->
     <div class="flex-1 overflow-y-auto p-3.5 bg-[#FBF9F5]">
         <div id="menu-list" class="grid grid-cols-2 gap-3.5 items-stretch">
             <!-- 动态由 JS 渲染 -->
@@ -91,7 +91,7 @@
         </button>
     </div>
 
-    <!-- 菜品加入确认与备注弹窗 (完美配置海鲜做法与修正后的标签) -->
+    <!-- 菜品加入确认与备注弹窗 -->
     <div id="dish-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-[#FFFDF9] border border-[#E6D5B8] rounded-[2rem] p-6 max-w-sm w-full shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-[#E6D5B8] pb-3 mb-4">
@@ -141,7 +141,7 @@
         </div>
     </div>
 
-    <!-- 购物车核对清单与手机号输入弹窗 (保留输入框，成功不显示) -->
+    <!-- 购物车核对清单与手机号输入弹窗 -->
     <div id="cart-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex flex-col justify-end">
         <div class="bg-[#FFFDF9] border-t border-[#E6D5B8] rounded-t-[2.5rem] p-6 max-w-md w-full mx-auto max-h-[85vh] flex flex-col shadow-2xl">
             <div class="flex justify-between items-center border-b border-[#E6D5B8] pb-3 mb-3">
@@ -165,7 +165,7 @@
         </div>
     </div>
 
-    <!-- 今日已点订单查看模态框 (仅限当天) -->
+    <!-- 今日已点订单查看模态框 -->
     <div id="today-orders-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-[#FFFDF9] border border-[#E6D5B8] rounded-[2rem] p-6 max-w-md w-full shadow-2xl flex flex-col max-h-[85vh]">
             <div class="flex justify-between items-center border-b border-[#E6D5B8] pb-3 mb-3">
@@ -178,13 +178,25 @@
                 <!-- 动态由JS渲染今日订单 -->
             </div>
             <div class="mt-4 pt-3 border-t border-[#E6D5B8] text-center text-xs text-[#7A6B63]">
-                💡 温馨提示：此处仅显示您今天在【A08桌】成功提交的订单。
+                💡 温馨提示：此处仅显示您今天在【<span id="today-modal-table">A08</span>桌】成功提交的订单。
             </div>
         </div>
     </div>
 
     <!-- 菜单数据与脚本 -->
     <script>
+        // 👉 提取 URL 中的动态桌号（如 ?table=B08），未指定则默认 A08
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentTable = urlParams.get('table') || 'A08';
+
+        // 初始化更新顶部桌号显示
+        window.addEventListener('DOMContentLoaded', () => {
+            const tableElement = document.getElementById('table-display');
+            if (tableElement) tableElement.textContent = currentTable + ' 桌';
+            const modalTableElement = document.getElementById('today-modal-table');
+            if (modalTableElement) modalTableElement.textContent = currentTable;
+        });
+
         const dishes = [
             // ==================== 1. 生猛海鲜 ====================
             { id: 1, cat: 'seafood', name: '黑椒黄油焗波士顿龙虾', desc: '波士顿鲜活大龙虾，黄油黑椒浓香焗制', price: 0, isMarket: true, img: 'https://images.unsplash.com/photo-1565680314210-5ef9a0992752?auto=format&fit=crop&w=500&q=80', isRec: true },
@@ -321,7 +333,6 @@
             document.getElementById('modal-dish-qty').innerText = currentModalQty;
             document.getElementById('dish-custom-note').value = '';
 
-            // 如果是鱼类或海鲜类，展示专属做法标签；否则隐藏或按需展示
             const seafoodTags = document.getElementById('seafood-tags-container');
             if (dish.cat === 'seafood' || dish.name.includes('鱼') || dish.name.includes('虾') || dish.name.includes('蟹') || dish.name.includes('斑')) {
                 seafoodTags.style.display = 'block';
@@ -445,7 +456,7 @@
             modal.classList.toggle('hidden');
         }
 
-        // ==================== 今日已点订单逻辑 (仅限当天) ====================
+        // ==================== 今日已点订单逻辑 ====================
         function getTodayDateStr() {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -456,7 +467,6 @@
                 const stored = localStorage.getItem('dsx_today_orders');
                 if (!stored) return [];
                 const data = JSON.parse(stored);
-                // 仅过滤今天的订单
                 const todayStr = getTodayDateStr();
                 return data.filter(o => o.dateStr === todayStr);
             } catch(e) {
@@ -513,9 +523,12 @@
             });
         }
 
+        // ==================== 提交订单与会员画像联动 ====================
         function checkoutOrder() {
             const phone = document.getElementById('customer-phone').value.trim();
             let totalCount = 0;
+            let currentOrderTotal = 0;
+
             Object.values(cart).forEach(arr => arr.forEach(item => totalCount += item.qty));
 
             if (totalCount === 0) {
@@ -527,7 +540,7 @@
                 return;
             }
 
-            // 封装今日订单数据
+            // 封装今日订单数据并计算总额
             let orderItemsData = [];
             Object.keys(cart).forEach(dishId => {
                 const dish = dishes.find(d => d.id == dishId);
@@ -539,18 +552,26 @@
                         isMarket: dish.isMarket,
                         note: item.note
                     });
+                    if (!dish.isMarket) {
+                        currentOrderTotal += (dish.price * item.qty);
+                    }
                 });
             });
 
+            // 👉 1. 触发自动打标和更新会员画像
+            updateCustomerProfile(phone, orderItemsData, currentOrderTotal);
+
+            // 👉 2. 存储今天本地订单
             const nowTime = new Date().toTimeString().substring(0, 5);
             saveTodayOrder({
                 time: nowTime,
                 items: orderItemsData
             });
 
-            // 下单成功提示 (严格按要求：不显示顾客手机号)
-            alert(`🎉 【鼎盛轩】下单成功！\n\n📍 尊贵桌号：A08 桌\n✅ 已成功提交订单，后台云打印机已自动出单，厨房正在为您烹饪！`);
+            // 👉 3. 下单成功动态桌号提示
+            alert(`🎉 【鼎盛轩】下单成功！\n\n📍 尊贵桌号：${currentTable} 桌\n✅ 已成功提交订单，后台云打印机已自动出单，厨房正在为您烹饪！`);
             
+            // 👉 4. 重置状态
             cart = {};
             updateCartUI();
             toggleCartModal();
@@ -561,14 +582,60 @@
         // 默认加载生猛海鲜
         filterMenu('seafood');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const tableNumber = urlParams.get('table'); // 获取网址中的 table 参数
-    if (tableNumber) {
-        const tableElement = document.getElementById('table-display');
-        if (tableElement) {
-            tableElement.textContent = tableNumber + ' 桌'; // 自动替换成对应的桌号
+        // 👉 自动打标签与更新画像的核心大脑
+        function updateCustomerProfile(customerPhone, currentOrderItems, currentOrderTotal) {
+            let db = JSON.parse(localStorage.getItem('restaurant_members') || '{}');
+            
+            let customer = db[customerPhone] || {
+                phone: customerPhone,
+                totalOrders: 0,
+                totalSpent: 0,
+                firstVisit: new Date().toLocaleDateString(),
+                lastVisit: '',
+                dishCounts: {},
+                tags: []
+            };
+
+            customer.totalOrders += 1;
+            customer.totalSpent += Number(currentOrderTotal) || 0;
+            customer.lastVisit = new Date().toISOString();
+
+            currentOrderItems.forEach(item => {
+                const dishName = item.name;
+                const qty = item.qty || 1;
+                customer.dishCounts[dishName] = (customer.dishCounts[dishName] || 0) + qty;
+            });
+
+            const sortedDishes = Object.entries(customer.dishCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3)
+                .map(entry => entry[0]);
+            customer.topDishes = sortedDishes;
+
+            let dynamicTags = [];
+            const avgOrderPrice = customer.totalSpent / customer.totalOrders;
+            if (avgOrderPrice >= 150 || customer.totalSpent >= 500) {
+                dynamicTags.push('高客单价/优质客户');
+            } else {
+                dynamicTags.push('大众消费');
+            }
+
+            let fishKeywordCount = 0;
+            Object.entries(customer.dishCounts).forEach(([dishName, count]) => {
+                if (dishName.includes('鱼') || dishName.includes('水煮鱼') || dishName.includes('烤鱼')) {
+                    fishKeywordCount += count;
+                }
+            });
+            if (fishKeywordCount >= 2) { 
+                dynamicTags.push('爱吃鱼');
+            }
+
+            dynamicTags.push('活跃会员');
+            customer.tags = dynamicTags;
+
+            db[customerPhone] = customer;
+            localStorage.setItem('restaurant_members', JSON.stringify(db));
         }
-    }
     </script>
 </body>
 </html>
